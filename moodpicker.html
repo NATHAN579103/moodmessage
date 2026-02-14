@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Night Voices Sanctuary</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            width: 100%; 
+            height: 100%; 
+            overflow: hidden; 
+            background-color: #000;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            font-family: 'Segoe UI', serif;
+            transition: background-color 1.5s ease;
+        }
+
+        /* --- THE NEW IGNITION OVERLAY --- */
+        #ignition-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; /* Start in total darkness */
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 2s ease, visibility 2s;
+        }
+
+        .lantern-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffae00 0%, transparent 70%);
+            border: 1px solid rgba(255, 174, 0, 0.3);
+            cursor: pointer;
+            box-shadow: 0 0 20px #ffae00;
+            animation: pulse-glow 3s infinite;
+            margin-bottom: 20px;
+        }
+
+        .ignition-text {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.6rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+
+        @keyframes pulse-glow {
+            0% { transform: scale(0.95); opacity: 0.5; box-shadow: 0 0 10px #ffae00; }
+            50% { transform: scale(1.05); opacity: 1; box-shadow: 0 0 40px #ffae00; }
+            100% { transform: scale(0.95); opacity: 0.5; box-shadow: 0 0 10px #ffae00; }
+        }
+
+        /* --- ORIGINAL STYLES --- */
+        #overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: radial-gradient(circle at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.8) 100%);
+            z-index: 1;
+            pointer-events: none;
+            transition: background 1.5s ease;
+        }
+
+        .back-home {
+            position: fixed; top: 25px; left: 25px; z-index: 100;
+            text-decoration: none; color: rgba(255,255,255,0.4);
+            font-size: 0.7rem; letter-spacing: 2px; padding: 10px 20px;
+            border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2);
+            border-radius: 40px; transition: 0.5s;
+        }
+
+        #firefly-box { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
+        
+        .dot {
+            position: absolute;
+            width: 2px; height: 2px;
+            background: #ffae00;
+            border-radius: 50%;
+            box-shadow: 0 0 4px #ff4500, 0 0 8px #ffae00;
+            animation: rise-and-burn var(--t) infinite ease-in-out;
+            opacity: 0;
+            filter: blur(0.3px);
+            transition: background 2s ease, box-shadow 2s ease;
+        }
+
+        @keyframes rise-and-burn {
+            0% { transform: translate(0, 0) scale(0.5); opacity: 0; }
+            10% { opacity: 0.8; }
+            40% { transform: translate(var(--x), var(--y)) scale(1.4); opacity: 0.5; }
+            100% { transform: translate(var(--x2), var(--y2)) scale(0); opacity: 0; }
+        }
+
+        .ui-center {
+            position: relative; height: 100vh; display: flex;
+            flex-direction: column; justify-content: center; align-items: center; z-index: 10;
+        }
+
+        h1 { 
+            color: rgba(253, 245, 230, 0.5); letter-spacing: 15px; 
+            margin-bottom: 50px; font-weight: 200;
+        }
+
+        .mood-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 35px; }
+        .mood-item { cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: 0.6s ease; }
+        
+        .orb {
+            width: 35px; height: 35px; border-radius: 50%;
+            background: currentColor; margin-bottom: 12px;
+            box-shadow: 0 0 15px currentColor; opacity: 0.3;
+        }
+        .mood-item:hover .orb { opacity: 1; transform: scale(1.1); }
+        .mood-item span { color: #fff; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 2px; opacity: 0.4; }
+
+        #popup {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); 
+            display: none; 
+            justify-content: center; align-items: center; z-index: 1000;
+            transition: 1s ease;
+        }
+
+        .card { text-align: center; color: white; max-width: 600px; padding: 40px; }
+        .card p { font-size: 1.6rem; font-family: 'Georgia', serif; font-style: italic; line-height: 1.8; margin-bottom: 40px; opacity: 0.8; }
+        
+        .btn { 
+            background: none; border: 1px solid rgba(255,255,255,0.2); 
+            color: rgba(255,255,255,0.5); padding: 12px 40px; cursor: pointer; 
+            letter-spacing: 3px; transition: 0.5s; font-size: 0.7rem;
+        }
+        .btn:hover { border-color: #fff; color: #fff; }
+
+        .hidden-overlay { opacity: 0; visibility: hidden; pointer-events: none; }
+    </style>
+</head>
+
+<body background="C:\Users\Mark Nathan\OneDrive\Desktop\programs\360_F_325140650_G5CeLqJF2gUsN3QYpEo8WpYGO3uZT0ra.jpg">
+
+    <div id="ignition-overlay">
+        <div class="lantern-btn" onclick="igniteField()"></div>
+        <div class="ignition-text">Tap to light the field</div>
+    </div>
+
+    <video id="bg-music" loop style="display:none;">
+        <source src="C:\Users\Mark Nathan\OneDrive\Desktop\assets\Download (3).mp4" type="video/mp4">
+    </video>
+
+    <audio id="click-sfx" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"></audio>
+
+    <a href="DEKSTOP.html" class="back-home">❮ MENU</a>
+
+    <div id="overlay"></div>
+    <div id="firefly-box"></div>
+
+    <div class="ui-center">
+        <h1>NIGHT VOICES</h1>
+        <div class="mood-grid" id="grid"></div>
+    </div>
+
+    <div id="popup" onclick="closePop()">
+        <div class="card" onclick="event.stopPropagation()">
+            <p id="msg"></p>
+            <button class="btn" onclick="closePop()">RETURN TO FIELD</button>
+        </div>
+    </div>
+
+    <script>
+        const bgMusic = document.getElementById('bg-music');
+        const clickSfx = document.getElementById('click-sfx');
+        const overlayVignette = document.getElementById('overlay');
+        const ignitionOverlay = document.getElementById('ignition-overlay');
+
+        // Handles the "Ignition" to fix Autoplay
+        function igniteField() {
+            // Start Audio
+            bgMusic.volume = 0.25;
+            bgMusic.play().catch(e => console.log("Audio play failed", e));
+            
+            // Fade out the black overlay
+            ignitionOverlay.classList.add('hidden-overlay');
+            
+            // Optional: Play a "spark" sound
+            clickSfx.volume = 0.2;
+            clickSfx.play();
+        }
+
+        const moodData = {
+            stressed: { c: "#cf9fff", l: "Stressed", m: ["The world asks too much of you sometimes. Leave your burdens at the edge of this field.", "You don't have to solve everything tonight."] },
+            lonesome: { c: "#ff5e5e", l: "Lonesome", m: ["Though we are miles apart, the same moon reflects in both our eyes.", "I am sending a hug through the silver light."] },
+            happy: { c: "#a0fbff", l: "Happy", m: ["Your joy makes the stars look dim.", "Capture this moment in a bottle."] },
+            inspired: { c: "#b2ffae", l: "Inspired", m: ["There is a masterpiece growing inside you.", "Your energy is electric."] },
+            energetic: { c: "#ffd700", l: "Energetic", m: ["You are a force of nature.", "The night is yours to conquer."] },
+            romantic: { c: "#ff9a9e", l: "Romantic", m: ["In a field of a thousand flowers, I would still only see you.", "You are the melody in my mind."] },
+            sleepy: { c: "#a18cd1", l: "Sleepy", m: ["Let the crickets sing you a lullaby.", "Tomorrow can wait."] },
+            calm: { c: "#4facfe", l: "Calm", m: ["Tranquility is your superpower.", "There is a deep peace in just being still."] },
+            playful: { c: "#f093fb", l: "Playful", m: ["Life is too short to be serious.", "You're my favorite kind of chaos."] },
+            thoughtful: { c: "#ffffff", l: "Thoughtful", m: ["Your mind is a beautiful, complex garden.", "I treasure the way you look at the world."] },
+            anxious: { c: "#84fab0", l: "Anxious", m: ["The 'what ifs' are just shadows.", "Focus on the sound of the wind. You're okay."] },
+            proud: { c: "#f6d365", l: "Proud", m: ["I am in absolute awe of you.", "Don't minimize your success."] },
+            missing: { c: "#fa709a", l: "Missing", m: ["The world feels a little hollow without your voice.", "My heart points directly to you."] },
+            bored: { c: "#c1c1c1", l: "Bored", m: ["Let's imagine our next adventure.", "Doing nothing feels like an event with you."] },
+            brave: { c: "#48c6ef", l: "Brave", m: ["You have the heart of a lion.", "You were made to overcome mountains."] }
+        };
+
+        const box = document.getElementById('firefly-box');
+        for(let i=0; i<90; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'dot';
+            dot.style.left = Math.random() * 100 + "%";
+            dot.style.top = (Math.random() * 50 + 50) + "%";
+            dot.style.setProperty('--x', (Math.random()*200 - 100) + 'px');
+            dot.style.setProperty('--y', (Math.random()*-200 - 50) + 'px');
+            dot.style.setProperty('--x2', (Math.random()*400 - 200) + 'px');
+            dot.style.setProperty('--y2', (Math.random()*-700 - 150) + 'px');
+            dot.style.setProperty('--t', (Math.random()*8 + 5) + 's');
+            box.appendChild(dot);
+        }
+
+        const grid = document.getElementById('grid');
+        Object.keys(moodData).forEach(k => {
+            const data = moodData[k];
+            const item = document.createElement('div');
+            item.className = 'mood-item';
+            item.style.color = data.c;
+            
+            item.addEventListener('click', () => {
+                clickSfx.volume = 0.08;
+                clickSfx.currentTime = 0;
+                clickSfx.play().catch(()=>{});
+                
+                document.querySelectorAll('.dot').forEach(d => {
+                    d.style.background = data.c;
+                    d.style.boxShadow = `0 0 8px ${data.c}, 0 0 15px ${data.c}`;
+                });
+
+                document.getElementById('msg').innerText = data.m[Math.floor(Math.random() * data.m.length)];
+                document.getElementById('msg').style.color = data.c;
+                
+                overlayVignette.style.background = "rgba(0,0,0,0.95)";
+                document.getElementById('popup').style.display = 'flex';
+            });
+
+            item.innerHTML = `<div class="orb"></div><span>${data.l}</span>`;
+            grid.appendChild(item);
+        });
+
+        function closePop() { 
+            document.getElementById('popup').style.display = 'none'; 
+            overlayVignette.style.background = "radial-gradient(circle at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.8) 100%)";
+        }
+    </script>
+</body>
+</html>
